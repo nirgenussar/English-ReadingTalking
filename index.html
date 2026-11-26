@@ -65,6 +65,7 @@ main{flex:1;min-height:0;display:flex}
 .tools{display:flex;gap:8px;justify-content:center;flex:none}
 .tool{background:var(--card);color:var(--sky);border:2px solid var(--sky);border-radius:99px;padding:6px 14px;font-size:1rem;display:flex;align-items:center;gap:6px}
 .tool:disabled{opacity:.35;cursor:default}
+.tool{white-space:nowrap}
 .speed{display:flex;align-items:center;justify-content:center;gap:8px;flex:none}
 .speed button{width:40px;height:40px;border-radius:50%;background:var(--card);color:var(--sky);border:2px solid var(--sky);font-size:1.15rem;padding:0;display:grid;place-items:center}
 .speed button:disabled{opacity:.3;cursor:default}
@@ -76,8 +77,12 @@ main{flex:1;min-height:0;display:flex}
 .ring svg.track{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .ring .bg{fill:none;stroke:var(--line);stroke-width:7}
 .ring .fg{fill:none;stroke:var(--berry);stroke-width:7;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:0}
-.ring.live .fg{animation:drain var(--secs) linear forwards}
-@keyframes drain{from{stroke-dashoffset:0}to{stroke-dashoffset:289}}
+.ring.live .fg{stroke-dasharray:60 229;animation:spin 1.2s linear infinite;transform-origin:50% 50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring.he .fg,.ring.he.live .fg{stroke:var(--sky)}
+.ring.he .core{background:var(--sky-soft);color:var(--sky);box-shadow:0 4px 0 color-mix(in srgb,var(--sky) 45%,transparent)}
+.ring.he.live .core{background:var(--sky);color:#fff}
+.msg small{font-family:var(--body);font-size:.82rem;opacity:.85}
 .ring .core{width:72%;height:72%;border-radius:50%;background:var(--berry-soft);color:var(--berry);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring.live .core{background:var(--berry);color:#fff}
 .ring{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -146,8 +151,8 @@ main{flex:1;min-height:0;display:flex}
 .list{display:flex;flex-direction:column;gap:4px;width:100%;max-height:22vh;overflow-y:auto}
 .list div{direction:ltr;font-family:var(--display);background:var(--scene);border-radius:10px;padding:4px 10px;text-align:left;font-size:.95rem}
 .faces{font-size:clamp(34px,6vh,52px);line-height:1}
-@media (max-height:640px){#pr small{display:none}.ring{width:84px;height:84px}.screen{gap:6px;padding:10px 12px}.speed button{width:32px;height:32px;font-size:1rem}.tool{padding:4px 12px}.msg{padding:6px 12px;font-size:1rem}.speed span{font-size:.88rem}.sbox{padding:8px 10px 10px;min-height:96px}.sbox.exam{padding-top:22px}.pic{font-size:1.7rem}.sent{font-size:clamp(1.7rem,8.6vw,2.4rem)}.btn.big{font-size:1.1rem;padding:11px 24px}}
-@media (prefers-reduced-motion:reduce){.screen{animation:none}.bar i,.w{transition:none}.ring.live .fg{animation:none}}
+@media (max-height:640px){.mid.rec #dots{display:none}.mid.rec .msg small{display:none}#pr small{display:none}.ring{width:84px;height:84px}.screen{gap:6px;padding:10px 12px}.speed button{width:32px;height:32px;font-size:1rem}.tool{padding:4px 12px}.msg{padding:6px 12px;font-size:1rem}.speed span{font-size:.88rem}.sbox{padding:8px 10px 10px;min-height:96px}.sbox.exam{padding-top:22px}.pic{font-size:1.7rem}.sent{font-size:clamp(1.7rem,8.6vw,2.4rem)}.btn.big{font-size:1.1rem;padding:11px 24px}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}.bar i,.w{transition:none}.ring.live .fg{animation:none;stroke-dasharray:289 0}}
 </style>
 
 <div class="wrap">
@@ -165,31 +170,31 @@ main{flex:1;min-height:0;display:flex}
 // The test passage (book page "Chad's Lunch"), read in order in test practice
 const STORY = "Chad's Lunch";
 const BOOK = [
-  {en:'Chad is in the kitchen.', pic:'👦🍳',  he:"צ'אד במטבח."},
-  {en:'He has lunch.', pic:'👦🍽️',            he:'הוא אוכל ארוחת צהריים.'},
-  {en:'He has a sandwich.', pic:'👦🥪',       he:'יש לו כריך.'},
-  {en:'He has chips.', pic:'👦🍟',            he:"יש לו צ'יפס."},
-  {en:'Oh no! The chair!', pic:'😱🪑',        he:'אוי לא! הכיסא!'},
-  {en:'Chad needs a new lunch.', pic:'😢🍽️',  he:"צ'אד צריך ארוחת צהריים חדשה."}
+  {en:'Chad is in the kitchen.', heKeys:[['מטבח']], pic:'👦🍳',  he:"צ'אד במטבח."},
+  {en:'He has lunch.', heKeys:[['צהריים','צהרים','ארוח','אוכל']], pic:'👦🍽️',            he:'הוא אוכל ארוחת צהריים.'},
+  {en:'He has a sandwich.', heKeys:[['כריך','סנדוויץ','סנדויץ','סנדביץ','סנדוויצ']], pic:'👦🥪',       he:'יש לו כריך.'},
+  {en:'He has chips.', heKeys:[['ציפס','צפס','טוגנ','חטיף','צייפס']], pic:'👦🍟',            he:"יש לו צ'יפס."},
+  {en:'Oh no! The chair!', heKeys:[['כיסא','כסא','כיסה']], pic:'😱🪑',        he:'אוי לא! הכיסא!'},
+  {en:'Chad needs a new lunch.', heKeys:[['צריך'],['חדש'],['צהריים','צהרים','ארוח','אוכל']], pic:'😢🍽️',  he:"צ'אד צריך ארוחת צהריים חדשה."}
 ];
 // More sentences in the same pattern, built only from words Ofri already practiced
 const EXTRA = [
-  {en:'Dan is in the house.', pic:'👦🏠',     he:'דן בבית.'},
-  {en:'He has a ball.', pic:'👦⚽',           he:'יש לו כדור.'},
-  {en:'She has a big bag.', pic:'👧🎒',       he:'יש לה תיק גדול.'},
-  {en:'The cat is on the desk.', pic:'🐱📚',  he:'החתול על שולחן הכתיבה.'},
-  {en:'The dog is in the box.', pic:'🐶📦',   he:'הכלב בתוך הקופסה.'},
-  {en:'My sister has a hat.', pic:'👧👒',     he:'לאחות שלי יש כובע.'},
-  {en:'My brother has a book.', pic:'👦📖',   he:'לאח שלי יש ספר.'},
-  {en:'Oh no! The egg!', pic:'😱🥚',          he:'אוי לא! הביצה!'},
-  {en:'The pupil needs a pen.', pic:'🧒🖊️',   he:'התלמיד צריך עט.'},
-  {en:'The teacher is tall.', pic:'🧑‍🏫📏',     he:'המורה גבוה.'},
-  {en:'The hen is in the box.', pic:'🐔📦',   he:'התרנגולת בתוך הקופסה.'},
-  {en:'The boy has a car.', pic:'👦🚗',       he:'לילד יש מכונית.'},
-  {en:'The girl is happy.', pic:'👧😄',       he:'הילדה שמחה.'},
-  {en:'Chad needs a new chair.', pic:'👦🪑✨',  he:"צ'אד צריך כיסא חדש."},
-  {en:'My friend has lunch.', pic:'🧒🍱',     he:'החבר שלי אוכל ארוחת צהריים.'},
-  {en:'The rabbit is small.', pic:'🐰🤏',     he:'הארנב קטן.'}
+  {en:'Dan is in the house.', heKeys:[['בית','ביית']], pic:'👦🏠',     he:'דן בבית.'},
+  {en:'He has a ball.', heKeys:[['כדור']], pic:'👦⚽',           he:'יש לו כדור.'},
+  {en:'She has a big bag.', heKeys:[['תיק'],['גדול','גדל']], pic:'👧🎒',       he:'יש לה תיק גדול.'},
+  {en:'The cat is on the desk.', heKeys:[['חתול','חתל'],['שולחנ','שלחנ']], pic:'🐱📚',  he:'החתול על שולחן הכתיבה.'},
+  {en:'The dog is in the box.', heKeys:[['כלב'],['קופס','ארגז']], pic:'🐶📦',   he:'הכלב בתוך הקופסה.'},
+  {en:'My sister has a hat.', heKeys:[['אחות','אחותי'],['כובע']], pic:'👧👒',     he:'לאחות שלי יש כובע.'},
+  {en:'My brother has a book.', heKeys:[['אח','אחי','אחים'],['ספר']], pic:'👦📖',   he:'לאח שלי יש ספר.'},
+  {en:'Oh no! The egg!', heKeys:[['ביצ']], pic:'😱🥚',          he:'אוי לא! הביצה!'},
+  {en:'The pupil needs a pen.', heKeys:[['תלמיד','תלמידה'],['עט']], pic:'🧒🖊️',   he:'התלמיד צריך עט.'},
+  {en:'The teacher is tall.', heKeys:[['מור'],['גבוה','גבוהה','ארוכ']], pic:'🧑‍🏫📏',     he:'המורה גבוה.'},
+  {en:'The hen is in the box.', heKeys:[['תרנגול','תרנגלת'],['קופס','ארגז']], pic:'🐔📦',   he:'התרנגולת בתוך הקופסה.'},
+  {en:'The boy has a car.', heKeys:[['ילד'],['מכונית','אוטו','רכב']], pic:'👦🚗',       he:'לילד יש מכונית.'},
+  {en:'The girl is happy.', heKeys:[['ילדה'],['שמח']], pic:'👧😄',       he:'הילדה שמחה.'},
+  {en:'Chad needs a new chair.', heKeys:[['צריך'],['כיסא','כסא'],['חדש']], pic:'👦🪑✨',  he:"צ'אד צריך כיסא חדש."},
+  {en:'My friend has lunch.', heKeys:[['חבר'],['צהריים','צהרים','ארוח','אוכל']], pic:'🧒🍱',     he:'החבר שלי אוכל ארוחת צהריים.'},
+  {en:'The rabbit is small.', heKeys:[['ארנב'],['קטנ','קטן']], pic:'🐰🤏',     he:'הארנב קטן.'}
 ];
 
 /* ---------- the child's details (asked once, kept on this phone) ---------- */
@@ -303,7 +308,7 @@ function stopReading(){ readToken++; try{ window.speechSynthesis && speechSynthe
 function enVoice(){ try{ return speechSynthesis.getVoices().find(v=>v.lang && /^en[-_]US/i.test(v.lang)) || speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('en')); }catch(_){ return null; } }
 function readSentence(onDone){
   if (cur) clearTimeout(cur.startT);
-  if (liveRec){ stopListening(true); setRes(''); }
+  if (session){ cancelRec(); setRes(''); }
   stopReading();
   const tok = readToken, ws = cur.words, spans = () => document.querySelectorAll('#sent .w');
   // character offset where each word starts, to follow the voice's word-boundary events
@@ -413,58 +418,58 @@ function begin(m, list){
 
 /* ---------- one sentence ---------- */
 const MIC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>`;
-let liveRec = null, ringTimer = null, stopTimer = null, settleTimer = null;
+const STOP = `<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>`;
+let liveRec = null, session = null;
 
 function showSentence(){
   if (cur) clearTimeout(cur.readT);
   stopReading(); stopListening(true);
   setProgress();
   const item = order[idx];
-  cur = {item, words: words(item.en), tries:0, misses:0, best:0, passed:false, glitch:false, done:false, hits:null, showHe:false};
-  const secs = Math.min(14, Math.max(8, Math.round(5 + cur.words.length*0.9)));
-  cur.secs = secs;
+  cur = {item, words: words(item.en), tries:0, misses:0, best:0, passed:false, glitch:false, done:false, hits:null,
+         heMode:false, heTried:false, heOk:false};
   screen(`<div class="sbox ${mode}">${mode==='exam' ? `<p class="story">📝 ${STORY}</p>` : ''}<p class="pic" aria-hidden="true">${item.pic||''}</p><p class="sent" id="sent" lang="en">${cur.words.map(w=>`<span class="w">${esc(w.t)}</span>`).join(' ')}</p></div>
     <div class="tools">
-      <button class="tool" id="hear">🔊 ${mode==='exam'?'להקשיב':'להקשיב שוב'}</button>
-      ${mode==='prac' ? `<button class="tool" id="tr">💡 מה זה אומר?</button>` : ''}
+      <button class="tool" id="hear">🔊 להקשיב</button>
+      <button class="tool" id="tr">🗣️ מה זה בעברית?</button>
     </div>
     <div class="speed" aria-label="קצב ההקראה">
       <button id="slower" aria-label="לאט יותר">🐢</button><span id="spd"></span><button id="faster" aria-label="מהר יותר">🐇</button>
     </div>
-    <p class="he" id="he" hidden></p>
     <div class="mid" id="mid">
       <p class="prompt" id="pr"></p>
-      <button class="ring" id="ring" style="--secs:${secs}s" aria-label="להתחיל להקליט">
+      <button class="ring" id="ring" aria-label="להתחיל להקליט">
         <svg class="track" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg>
-        <span class="core">${MIC}<span class="sec" id="sec"><span class="tap">${G('לחץ','לחצי')}</span></span></span>
+        <span class="core" id="core"></span>
       </button>
       <div id="dots">${dots()}</div>
       <div class="result" id="res"></div>
     </div>
     <div class="foot" id="foot"><button class="btn ghost sm" id="home">→ לתפריט</button><span></span></div>`);
+  ringOff();
   $('home').onclick = startScreen;
   $('hear').onclick = () => readSentence();
-  // tap the microphone to start; tap again while it listens to say "I finished"
+  // one tap starts recording, the next tap ends it; nothing starts or ends by itself
   $('ring').onclick = () => {
-    if (liveRec){ try{ liveRec.stop(); }catch(_){} return; }
+    if (session){ stopRec(); return; }
+    if (cur.heMode){ startMeaning(); return; }
     if (cur.done) againAttempt(); else { setRes(''); startAttempt(); }
   };
+  $('tr').onclick = () => setHeMode(!cur.heMode);
   const showSpeed = () => { $('spd').textContent = 'קצב: ' + SPEEDS[speed].label.replace(/[🐢🐇] /u,''); $('slower').disabled = speed===0; $('faster').disabled = speed===SPEEDS.length-1; };
   const setSpeed = d => {
     speed = Math.max(0, Math.min(SPEEDS.length-1, speed+d)); showSpeed();
     try{ localStorage.setItem('readSpeed', speed); }catch(_){}
-    if (!liveRec && !$('hear').disabled) readSentence();          // play it right away at the new speed
+    if (!session && !$('hear').disabled) readSentence();          // play it right away at the new speed
   };
   $('slower').onclick = () => setSpeed(-1); $('faster').onclick = () => setSpeed(1); showSpeed();
-  if ($('tr')) $('tr').onclick = () => { cur.showHe = !cur.showHe; $('he').textContent = cur.item.he; $('he').hidden = !cur.showHe; };
-  if (mode==='prac'){
-    // practice: hear it first, then it's Ofri's turn
-    $('pr').textContent = `${G('תקשיב','תקשיבי')}, ואז ${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} 🎤`;
-    readSentence();
-  } else {
-    // test practice: the phone starts listening by itself; 🔊 is there if he wants to hear it first
-    $('pr').innerHTML = `${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} בקול 🎤<br><small>(אפשר גם להקשיב קודם 🔊)</small>`;
-  }
+  readPrompt();
+  if (mode==='prac') readSentence();        // practice: hear it first, then it's his turn
+}
+function readPrompt(){
+  $('pr').innerHTML = mode==='prac'
+    ? `${G('תקשיב','תקשיבי')}, ואז ${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} 🎤<br><small>כש${G('תסיים','תסיימי')}, ${G('לחץ','לחצי')} שוב</small>`
+    : `${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} בקול 🎤<br><small>כש${G('תסיים','תסיימי')}, ${G('לחץ','לחצי')} שוב · אפשר להקשיב קודם 🔊</small>`;
 }
 
 function dots(){
@@ -478,56 +483,79 @@ function paint(hits, final){
   });
 }
 function clearPaint(){ document.querySelectorAll('#sent .w').forEach(s => s.classList.remove('live','hit','miss')); }
-function setRes(html, listening){ if ($('mid')) $('mid').classList.toggle('compact', !!html && !listening); if ($('res')) $('res').innerHTML = html; if ($('pr')) $('pr').hidden = !!html && !listening; }
+function setRes(html, listening){ if ($('mid')){ $('mid').classList.toggle('compact', !!html && !listening); $('mid').classList.toggle('rec', !!listening); } if ($('res')) $('res').innerHTML = html; if ($('pr')) $('pr').hidden = !!html; }
 
+/* the record button: "tap" when idle, a stop square with "סיום" while recording */
 function ringOn(){
   const r = $('ring'); if (!r) return;
-  r.classList.remove('live','off'); void r.offsetWidth; r.classList.add('live'); r.setAttribute('aria-label','לסיים את ההקלטה');
-  let left = cur.secs; $('sec').textContent = left;
-  clearInterval(ringTimer);
-  ringTimer = setInterval(()=>{ left--; if ($('sec')) $('sec').textContent = left>0 ? left : ''; if (left<=0) clearInterval(ringTimer); }, 1000);
+  r.classList.add('live'); r.setAttribute('aria-label','לסיים את ההקלטה');
+  $('core').innerHTML = `${STOP}<span class="tap">סיום</span>`;
 }
 function ringOff(){
-  clearInterval(ringTimer); clearTimeout(stopTimer); clearTimeout(settleTimer);
-  const r = $('ring'); if (r){ r.classList.remove('live'); r.setAttribute('aria-label','להתחיל להקליט'); }
-  if ($('sec')) $('sec').innerHTML = `<span class="tap">${G('לחץ','לחצי')}</span>`;
+  const r = $('ring'); if (r){ r.classList.remove('live'); r.classList.toggle('he', !!(cur && cur.heMode)); r.setAttribute('aria-label','להתחיל להקליט'); }
+  if ($('core')) $('core').innerHTML = `${MIC}<span class="tap">${G('לחץ','לחצי')}</span>`;
 }
-function stopListening(abort){
-  ringOff();
-  if (liveRec){ const r = liveRec; liveRec = null; try{ abort ? r.abort() : r.stop(); }catch(_){} }
+function stopListening(){ cancelRec(); }
+
+/* ---------- recording engine ----------
+   Starts on a tap and keeps listening until the child taps again (safety stop after 60 s).
+   Phones end speech recognition by themselves after a pause, so it quietly restarts
+   and keeps everything heard so far. */
+const MAX_REC_MS = 60000;
+function startRec(lang, onPartial, onDone){
+  stopReading();
+  const ses = {lang, heard:[], stopped:false, denied:false, onPartial, onDone, rec:null};
+  session = ses; ringOn(); setHear(false);
+  ses.capT = setTimeout(() => stopRec(), MAX_REC_MS);
+  const go = () => {
+    let rec;
+    try { if (BLOCKED || !micReady) throw 0; rec = new SR(); } catch(_) { finishRec(ses); return; }
+    rec.lang = lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 5;
+    ses.rec = rec; liveRec = rec;
+    rec.onresult = ev => {
+      if (session!==ses) return;
+      for (let i=0;i<ev.results.length;i++) for (let j=0;j<ev.results[i].length;j++){ const t = ev.results[i][j].transcript; if (t && t.trim()) ses.heard.push(t); }
+      ses.onPartial && ses.onPartial(ses.heard);
+    };
+    rec.onerror = ev => { if (['not-allowed','service-not-allowed','audio-capture'].includes(ev.error)) ses.denied = true; };
+    rec.onend = () => {
+      rec._ended = true;
+      if (session!==ses) return;
+      if (!ses.stopped && !ses.denied){ setTimeout(() => { if (session===ses && !ses.stopped) go(); }, 150); return; }
+      finishRec(ses);
+    };
+    try { rec.start(); } catch(_) { finishRec(ses); }
+  };
+  go();
+}
+function stopRec(){
+  const ses = session; if (!ses) return;
+  ses.stopped = true;
+  // between two listening rounds there is nothing to stop: finish right away
+  try { (ses.rec && !ses.rec._ended) ? ses.rec.stop() : finishRec(ses); } catch(_) { finishRec(ses); }
+  setTimeout(() => { if (session===ses) finishRec(ses); }, 1500);       // phone never reported the end
+}
+function finishRec(ses){
+  if (session!==ses) return;
+  session = null; liveRec = null; clearTimeout(ses.capT);
+  ringOff(); setHear(true);
+  ses.onDone(ses.heard);
+}
+function cancelRec(){
+  const ses = session; if (!ses) return;
+  session = null; liveRec = null; clearTimeout(ses.capT);
+  try { ses.rec && ses.rec.abort(); } catch(_) {}
+  ringOff(); setHear(true);
 }
 
-/* Listening: continuous, with partial results, several alternatives per result.
-   Words light up green while Ofri reads; it stops by itself once every main word was heard. */
+/* ---------- reading the sentence aloud (English) ---------- */
 function startAttempt(){
-  if (!cur || cur.done || liveRec || !$('ring')) return;
-  stopReading(); clearPaint();
-  let rec;
-  try { if (BLOCKED || !micReady) throw 0; rec = new SR(); } catch(_) { miss(); return; }
-  rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 5;
-  const heard = []; let any = false, failed = false, ended = false;
-  liveRec = rec;
-  setRes(`<p class="msg good">מקשיבים… ${G('תקרא','תקראי')} עכשיו 📖</p>`, true);
-  ringOn();
-  stopTimer = setTimeout(() => { if (liveRec===rec){ try{ rec.stop(); }catch(_){} } }, cur.secs*1000);
-  rec.onresult = ev => {
-    for (let i=0;i<ev.results.length;i++) for (let j=0;j<ev.results[i].length;j++){ const t = ev.results[i][j].transcript; if (t && t.trim()){ heard.push(t); any = true; } }
-    const hits = matchWords(cur.words, heard);
-    paint(hits, false);
-    const mainDone = cur.words.every((w,i) => hits[i] || SOFT.has(w.k));
-    clearTimeout(settleTimer);
-    if (mainDone) settleTimer = setTimeout(() => { if (liveRec===rec){ try{ rec.stop(); }catch(_){} } }, 800);
-  };
-  rec.onerror = ev => { if (ev.error==='aborted') return; failed = !any; };
-  rec.onend = () => {
-    if (ended) return; ended = true;
-    const mine = liveRec===rec; if (mine) liveRec = null;
-    ringOff();
-    if (!mine) return;                               // cancelled: left the screen or chose to listen first
-    if (!any) { miss(); return; }
-    judge(heard);
-  };
-  try { rec.start(); } catch(_) { liveRec = null; ringOff(); miss(); }
+  if (!cur || cur.done || session || !$('ring')) return;
+  clearPaint();
+  setRes(`<p class="msg good">מקשיבים… ${G('תקרא','תקראי')} עכשיו 📖<br><small>${G('סיימת','סיימת')}? ${G('לחץ','לחצי')} על ⏹</small></p>`, true);
+  startRec('en-US',
+    heard => paint(matchWords(cur.words, heard), false),         // words light up green while he reads
+    heard => heard.length ? judge(heard) : miss());
 }
 
 function judge(heard){
@@ -546,7 +574,6 @@ function judge(heard){
     const tip = missed.length ? `<br>${G('שים','שימי')} לב: <b dir="ltr" lang="en">${esc(missed.slice(0,2).join(', '))}</b>` : '';
     const head = score>=50 ? `כמעט, ${KID()}! ✨` : `${G('בוא','בואי')} ננסה שוב, ${KID()}, לאט וברור 🙂`;
     setRes(view + `<p class="msg warm">${head}${tip}</p>${readyRow()}`);
-    setHear(true);
   } else {
     if (!cur.modelRead){
       cur.modelRead = true;
@@ -572,7 +599,6 @@ function miss(){
     finish();
   } else {
     setRes(`<p class="msg warm">לא הצלחתי לשמוע, ${KID()} 🙉 ${G('דבר','דברי')} קרוב לטלפון</p>${readyRow()}`);
-    setHear(true);
   }
 }
 function finish(){
@@ -580,21 +606,71 @@ function finish(){
   $('dots').innerHTML = dots(); setHear(true);
   // the child can always read the sentence again before moving on
   if ($('res') && !$('again2')) $('res').insertAdjacentHTML('beforeend', `<p class="hint" id="again2">רוצה לקרוא שוב? ${G('לחץ','לחצי')} על המיקרופון 🎤</p>`);
+  showNext();
+}
+function showNext(){
   const last = idx === order.length-1;
   $('foot').innerHTML = `<button class="btn ghost sm" id="home">→ לתפריט</button><button class="btn big" id="next">${last?'לסיכום 🏁':'למשפט הבא ←'}</button>`;
   $('home').onclick = startScreen; $('next').onclick = next;
 }
 // Another go at the same sentence, also after it was passed or after a microphone hiccup
 function againAttempt(){
-  if (!cur || liveRec) return;
+  if (!cur || session) return;
   cur.done = false; cur.misses = 0;
-  const r = $('ring'); if (r) r.classList.remove('off');
   setRes('');
   startAttempt();
 }
+
+/* ---------- saying the meaning in Hebrew ----------
+   The app is never sure it understood the child's Hebrew, so it never says "wrong":
+   sure it heard the meaning → praise + "אכן הפירוש הוא…"; otherwise → "יפה מאוד! הפירוש הוא…". */
+function setHeMode(on){
+  cancelRec(); stopReading();
+  cur.heMode = on;
+  $('tr').textContent = on ? '📖 חזרה לקריאה' : '🗣️ מה זה בעברית?';
+  $('dots').hidden = on;
+  ringOff();
+  if (on){
+    $('pr').innerHTML = `${KID()}, מה פירוש המשפט? 🤔<br><small>${G('לחץ','לחצי')} על המיקרופון, ${G('תגיד','תגידי')} בעברית, ו${G('לחץ','לחצי')} שוב ${G('כשתסיים','כשתסיימי')}</small>`;
+    setRes('');
+  } else {
+    readPrompt();
+    setRes(cur.lastReadRes || '');
+  }
+}
+const HE_FINAL = {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
+function heNorm(s){ return (s||'').replace(/[֑-ׇ]/g,'').replace(/[ךםןףץ]/g,c=>HE_FINAL[c]).replace(/[׳'"`]/g,'').replace(/[^א-ת\s]/g,' ').replace(/\s+/g,' ').trim(); }
+// a word with up to two one-letter prefixes removed: "והכלב" → "הכלב" → "כלב"
+function heForms(tok){ const out = [tok]; let t = tok; for (let k=0;k<2;k++){ if (t.length>2 && 'והבלמשכ'.includes(t[0])){ t = t.slice(1); out.push(t); } } return out; }
+function heGroupOk(group, toks){
+  return group.some(stem => { const s = heNorm(stem); return toks.some(tok => heForms(tok).some(f => s.length<=2 ? f===s : f.startsWith(s))); });
+}
+function startMeaning(){
+  if (session) return;
+  setRes(`<p class="msg sorry">מקשיבים… ${G('תגיד','תגידי')} בעברית מה זה אומר 🗣️<br><small>${G('סיימת','סיימת')}? ${G('לחץ','לחצי')} על ⏹</small></p>`, true);
+  startRec('he-IL', null, heard => {
+    const toks = heNorm(heard.join(' ')).split(' ').filter(Boolean);
+    const keys = cur.item.heKeys || [];
+    const sure = toks.length && keys.length && keys.every(g => heGroupOk(g, toks));
+    const meaning = `<b>${esc(cur.item.he)}</b>`;
+    cur.heTried = cur.heTried || toks.length>0;
+    if (sure){
+      cur.heOk = true;
+      setRes(`<p class="msg good">${pick([`כל הכבוד ${KID()}! 🎉`,`מצוין ${KID()}! ⭐`,`${G('צדקת','צדקת')}, ${KID()}! 👏`])}<br>אכן הפירוש הוא: ${meaning}</p>`);
+    } else if (toks.length){
+      setRes(`<p class="msg warm">יפה מאוד, ${KID()}! 👏<br>הפירוש הוא: ${meaning}</p>`);
+    } else {
+      setRes(`<p class="msg warm">לא הצלחתי לשמוע 🙉<br>הפירוש הוא: ${meaning}</p>`);
+    }
+    if (!cur.done) showNextLight();
+  });
+}
+// after the meaning step he can still go back to reading, or move on
+function showNextLight(){ if (!$('next')) showNext(); }
+
 function next(){
-  clearTimeout(cur.auto); stopReading(); stopListening(true);
-  results.push({en:cur.item.en, score: cur.glitch && !cur.tries ? null : cur.best, passed:cur.passed, glitch:cur.glitch});
+  clearTimeout(cur.readT); stopReading(); stopListening(true);
+  results.push({en:cur.item.en, score: (cur.glitch||!cur.tries) && !cur.tries ? null : cur.best, passed:cur.passed, glitch:cur.glitch, heOk:cur.heOk, heTried:cur.heTried});
   idx++;
   idx < order.length ? showSentence() : summary();
 }
@@ -634,9 +710,10 @@ function buildReport(avg, ok, again, glitches){
     mode==='exam' ? `📝 תרגול לבחינה (${STORY})` : '📖 תרגול כללי',
     avg===null ? '' : `⭐ ציון ממוצע: ${avg}%`,
     `✅ ${G('קרא','קראה')} נכון ${ok} מתוך ${results.length} משפטים`,
+    results.some(r=>r.heTried) ? `🗣️ ${G('הסביר','הסבירה')} בעברית נכון ${results.filter(r=>r.heOk).length} משפטים (מתוך ${results.filter(r=>r.heTried).length} שניסה)` : '',
     ''
   ];
-  results.forEach(r => lines.push(`${r.passed ? '✅' : r.score===null ? '⚪' : '🔸'} ${r.en}${r.score===null ? ' (תקלה במיקרופון)' : ` – ${r.score}%`}`));
+  results.forEach(r => lines.push(`${r.passed ? '✅' : r.score===null ? '⚪' : '🔸'} ${r.en}${r.score===null ? (r.glitch ? ' (תקלה במיקרופון)' : ' (לא נקרא)') : ` – ${r.score}%`}${r.heOk ? ' 🗣️✓' : ''}`));
   if (again.length) lines.push('', 'כדאי לתרגל שוב את המשפטים המסומנים ב-🔸.');
   if (glitches) lines.push(`(${glitches} משפטים לא נבדקו בגלל תקלה במיקרופון)`);
   lines.push('', 'genulogic ©');
