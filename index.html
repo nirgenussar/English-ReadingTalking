@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body style="margin:0">
+<title>קוראים באנגלית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Varela+Round&display=swap">
+<style>
+/* Layout: fixed one-screen app (no page scroll, bottom 5% left empty for the host badge).
+   Screens swap in place: details → start (pick practice) → one sentence per screen → summary + parent report */
+:root{
+  --bg:#EAF4EE; --card:#FFFFFF; --ink:#1B3227; --muted:#58715F; --line:#CDE1D4;
+  --leaf:#23905A; --leaf-soft:#D6EEDF; --sun:#FFC53A; --sun-soft:#FFF1C9;
+  --berry:#D9416B; --berry-soft:#FBE0E8; --scene:#F3F9F5; --sky:#2F6FD0; --sky-soft:#DCE8FA;
+  --miss:#C0661B; --miss-soft:#FBE6D3;
+  --display:"Fredoka","Varela Round",system-ui,sans-serif;
+  --body:"Varela Round","Fredoka",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1D17; --card:#172A22; --ink:#E6F2EA; --muted:#9BB6A6; --line:#2A4236;
+  --leaf:#4BC283; --leaf-soft:#1E3D2E; --sun:#FFD15C; --sun-soft:#3A3218;
+  --berry:#F0779A; --berry-soft:#43202C; --scene:#1C3229; --sky:#7FADF0; --sky-soft:#1C2E4A;
+  --miss:#F0A35E; --miss-soft:#3F2A18;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1D17; --card:#172A22; --ink:#E6F2EA; --muted:#9BB6A6; --line:#2A4236;
+  --leaf:#4BC283; --leaf-soft:#1E3D2E; --sun:#FFD15C; --sun-soft:#3A3218;
+  --berry:#F0779A; --berry-soft:#43202C; --scene:#1C3229; --sky:#7FADF0; --sky-soft:#1C2E4A;
+  --miss:#F0A35E; --miss-soft:#3F2A18;
+  color-scheme:dark}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45;direction:rtl;overscroll-behavior:none}
+.wrap{height:100%;max-width:560px;margin:0 auto;padding-block:12px calc(5vh + 8px);padding-block-end:calc(5dvh + 8px);padding-inline:16px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance}
+button,.btn{font-family:var(--display);cursor:pointer;border:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
+.top h1{font-size:1.2rem}
+.count{font-family:var(--display);color:var(--muted);font-variant-numeric:tabular-nums;font-size:.95rem}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;flex:none}
+.bar i{display:block;height:100%;width:0;background:var(--leaf);border-radius:99px;transition:width .4s}
+main{flex:1;min-height:0;display:flex}
+.copy{flex:none;text-align:center;color:var(--muted);font-size:.72rem;line-height:1;margin-top:-2px}
+.screen{flex:1;min-height:0;background:var(--card);border:2px solid var(--line);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;animation:in .25s ease-out}
+@keyframes in{from{opacity:.4;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.center{justify-content:center;align-items:center;text-align:center}
+.hint{color:var(--muted);text-align:center;margin:0;font-size:.92rem}
+.prompt{font-size:1.08rem;margin:0;text-align:center}
+
+/* the sentence being read */
+.story{position:absolute;top:6px;left:0;right:0;font-family:var(--display);color:var(--muted);text-align:center;margin:0;font-size:.85rem;direction:ltr}
+.sbox.exam{padding-top:24px}
+.pic{font-size:clamp(2rem,6vh,3rem);line-height:1;margin:0;letter-spacing:.08em}
+.sbox{position:relative;background:var(--scene);border-radius:20px;padding:12px 12px 16px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:clamp(110px,22vh,190px);flex:none}
+.sent{font-family:var(--display);font-weight:600;direction:ltr;text-align:center;margin:0;font-size:clamp(1.9rem,min(9.5vw,6.6vh),3.2rem);line-height:1.35;text-wrap:balance}
+.w{border-radius:.18em;padding:0 .06em;transition:background .15s,color .15s}
+.w.now{background:var(--sun);color:#1B3227}
+.w.live{color:var(--leaf)}
+.w.hit{color:var(--leaf);background:var(--leaf-soft)}
+.w.miss{color:var(--miss);background:var(--miss-soft);text-decoration:underline wavy;text-underline-offset:.18em}
+.he{margin:0;text-align:center;font-size:1.05rem;color:var(--sky)}
+.tools{display:flex;gap:8px;justify-content:center;flex:none}
+.tool{background:var(--card);color:var(--sky);border:2px solid var(--sky);border-radius:99px;padding:6px 14px;font-size:1rem;display:flex;align-items:center;gap:6px}
+.tool:disabled{opacity:.35;cursor:default}
+.speed{display:flex;align-items:center;justify-content:center;gap:8px;flex:none}
+.speed button{width:40px;height:40px;border-radius:50%;background:var(--card);color:var(--sky);border:2px solid var(--sky);font-size:1.15rem;padding:0;display:grid;place-items:center}
+.speed button:disabled{opacity:.3;cursor:default}
+.speed span{font-family:var(--display);color:var(--sky);font-size:.95rem;min-width:7.5em;text-align:center}
+
+/* listening ring */
+.mid{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.ring{width:clamp(84px,14vh,118px);height:clamp(84px,14vh,118px);position:relative;flex:none;display:grid;place-items:center}
+.ring svg.track{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring .bg{fill:none;stroke:var(--line);stroke-width:7}
+.ring .fg{fill:none;stroke:var(--berry);stroke-width:7;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:0}
+.ring.live .fg{animation:drain var(--secs) linear forwards}
+@keyframes drain{from{stroke-dashoffset:0}to{stroke-dashoffset:289}}
+.ring .core{width:72%;height:72%;border-radius:50%;background:var(--berry-soft);color:var(--berry);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring.live .core{background:var(--berry);color:#fff}
+.ring.off{opacity:.35}
+.ring .core svg{width:40%;height:40%}
+.ring .sec{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1;font-variant-numeric:tabular-nums}
+.mid.compact .ring{display:none}
+.mid{overflow-y:auto;justify-content:safe center}
+.tries{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.88rem}
+.dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--muted)}
+.dot.used{background:var(--muted)}
+.dot.win{background:var(--leaf);border-color:var(--leaf)}
+.result{width:100%;display:flex;flex-direction:column;gap:6px;align-items:center}
+.line{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:300px}
+.meter{flex:1;height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;transition:width .5s}
+.pct{font-family:var(--display);font-weight:700;font-size:1.45rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.msg{font-family:var(--display);font-size:1.05rem;padding:8px 14px;border-radius:14px;margin:0}
+.msg.good{background:var(--leaf-soft);color:var(--leaf)}
+.msg.warm{background:var(--sun-soft);color:var(--ink)}
+.msg.sorry{background:var(--sky-soft);color:var(--ink)}
+.foot{display:flex;gap:10px;justify-content:space-between;align-items:center;flex:none}
+
+/* buttons, fields */
+.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--leaf);color:#fff;font-size:1.1rem;font-weight:600;padding:12px 22px;border-radius:14px;box-shadow:0 4px 0 color-mix(in srgb,var(--leaf) 60%,#000)}
+.btn.ghost{background:transparent;color:var(--leaf);box-shadow:none;border:2px solid var(--leaf)}
+.btn.blue{background:var(--sky);box-shadow:0 4px 0 color-mix(in srgb,var(--sky) 60%,#000)}
+.btn.wa{background:#1FA855;box-shadow:0 4px 0 #157A3D}
+.btn.big{font-size:1.25rem;padding:14px 30px}
+.btn.sm{font-size:1rem;padding:9px 14px}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.mode{border-radius:18px;padding:14px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;font-size:1.15rem;font-weight:600;border:0}
+.mode small{font-family:var(--body);font-weight:400;font-size:.82rem;opacity:.85}
+.mode.prac{background:var(--leaf);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--leaf) 60%,#000)}
+.mode.exam{background:var(--sky);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--sky) 60%,#000)}
+.mode:disabled{opacity:.5;cursor:default}
+.note{background:var(--sun-soft);border-radius:14px;padding:10px 14px;font-size:.9rem;margin:0;text-align:right}
+.note.info{background:var(--sky-soft)}
+.note ol{margin:6px 0 0;padding-inline-start:20px}
+.ok-mic{font-family:var(--display);color:var(--leaf);font-size:1.05rem;margin:0}
+.fld{display:flex;flex-direction:column;gap:6px}
+.lbl{font-family:var(--display);font-size:1rem}
+.lbl small{color:var(--muted);font-family:var(--body);font-size:.8rem}
+.fld input{box-sizing:border-box;font-family:var(--display);font-size:1.3rem;width:100%;padding:9px 12px;border-radius:14px;border:2px solid var(--line);background:var(--scene);color:var(--ink);text-align:center}
+.fld input:focus{outline:none;border-color:var(--leaf)}
+#phone{direction:ltr}
+.chips{display:flex;gap:8px}
+.chipb{white-space:nowrap;font-family:var(--display);font-size:1.05rem;padding:7px 18px;border-radius:99px;border:2px solid var(--line);background:var(--scene);color:var(--ink)}
+.chipb[aria-pressed="true"]{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.err{color:var(--berry);text-align:center;min-height:1.2em;margin:0;font-size:.92rem}
+.tog{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.95rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.stat{background:var(--scene);border-radius:16px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.8rem}
+.list{display:flex;flex-direction:column;gap:4px;width:100%;max-height:22vh;overflow-y:auto}
+.list div{direction:ltr;font-family:var(--display);background:var(--scene);border-radius:10px;padding:4px 10px;text-align:left;font-size:.95rem}
+.faces{font-size:clamp(34px,6vh,52px);line-height:1}
+@media (max-height:640px){.screen{gap:6px;padding:10px 12px}.speed button{width:32px;height:32px;font-size:1rem}.tool{padding:4px 12px}.msg{padding:6px 12px;font-size:1rem}.speed span{font-size:.88rem}.sbox{padding:8px 10px 10px;min-height:96px}.sbox.exam{padding-top:22px}.pic{font-size:1.7rem}.sent{font-size:clamp(1.7rem,8.6vw,2.4rem)}.btn.big{font-size:1.1rem;padding:11px 24px}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}.bar i,.w{transition:none}.ring.live .fg{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <h1 id="ttl">קוראים באנגלית</h1>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <main id="app"></main>
+  <footer class="copy">© כל הזכויות שמורות ל-<span lang="en" dir="ltr">genulogic</span></footer>
+</div>
+
+<script>
+/* ---------- sentences ---------- */
+// The test passage (book page "Chad's Lunch"), read in order in test practice
+const STORY = "Chad's Lunch";
+const BOOK = [
+  {en:'Chad is in the kitchen.', pic:'👦🍳',  he:"צ'אד במטבח."},
+  {en:'He has lunch.', pic:'👦🍽️',            he:'הוא אוכל ארוחת צהריים.'},
+  {en:'He has a sandwich.', pic:'👦🥪',       he:'יש לו כריך.'},
+  {en:'He has chips.', pic:'👦🍟',            he:"יש לו צ'יפס."},
+  {en:'Oh no! The chair!', pic:'😱🪑',        he:'אוי לא! הכיסא!'},
+  {en:'Chad needs a new lunch.', pic:'😢🍽️',  he:"צ'אד צריך ארוחת צהריים חדשה."}
+];
+// More sentences in the same pattern, built only from words Ofri already practiced
+const EXTRA = [
+  {en:'Dan is in the house.', pic:'👦🏠',     he:'דן בבית.'},
+  {en:'He has a ball.', pic:'👦⚽',           he:'יש לו כדור.'},
+  {en:'She has a big bag.', pic:'👧🎒',       he:'יש לה תיק גדול.'},
+  {en:'The cat is on the desk.', pic:'🐱📚',  he:'החתול על שולחן הכתיבה.'},
+  {en:'The dog is in the box.', pic:'🐶📦',   he:'הכלב בתוך הקופסה.'},
+  {en:'My sister has a hat.', pic:'👧👒',     he:'לאחות שלי יש כובע.'},
+  {en:'My brother has a book.', pic:'👦📖',   he:'לאח שלי יש ספר.'},
+  {en:'Oh no! The egg!', pic:'😱🥚',          he:'אוי לא! הביצה!'},
+  {en:'The pupil needs a pen.', pic:'🧒🖊️',   he:'התלמיד צריך עט.'},
+  {en:'The teacher is tall.', pic:'🧑‍🏫📏',     he:'המורה גבוה.'},
+  {en:'The hen is in the box.', pic:'🐔📦',   he:'התרנגולת בתוך הקופסה.'},
+  {en:'The boy has a car.', pic:'👦🚗',       he:'לילד יש מכונית.'},
+  {en:'The girl is happy.', pic:'👧😄',       he:'הילדה שמחה.'},
+  {en:'Chad needs a new chair.', pic:'👦🪑✨',  he:"צ'אד צריך כיסא חדש."},
+  {en:'My friend has lunch.', pic:'🧒🍱',     he:'החבר שלי אוכל ארוחת צהריים.'},
+  {en:'The rabbit is small.', pic:'🐰🤏',     he:'הארנב קטן.'}
+];
+
+/* ---------- the child's details (asked once, kept on this phone) ---------- */
+let PROFILE = null;
+try{ PROFILE = JSON.parse(localStorage.getItem('reader1')||'null'); }catch(_){}
+const G = (m, f) => PROFILE && PROFILE.gender==='f' ? f : m;
+const KID = () => (PROFILE && PROFILE.name) || 'אלוף';
+function saveProfile(p){ PROFILE = p; try{ localStorage.setItem('reader1', JSON.stringify(p)); }catch(_){} }
+// Israeli mobile number → international form for WhatsApp ("050-1234567" → "972501234567")
+function intlPhone(raw){
+  let d = (raw||'').replace(/\D/g,'');
+  if (d.startsWith('972')) d = d.slice(3);
+  if (d.startsWith('0')) d = d.slice(1);
+  return /^5\d{8}$/.test(d) ? '972'+d : '';
+}
+
+const PASS = 70, MAX_TRIES = 3, MAX_MISSES = 2;
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const CHEER_WIN = () => [`מצוין ${KID()}! 🎉`,`איזו קריאה יפה, ${KID()}! ⭐`,`בדיוק ככה, ${KID()}! 🏆`,`כל הכבוד ${KID()}! 👏`];
+const CHEER_FAIL = () => [`לא נורא ${KID()}! עוד קצת תרגול וזה יגיע 💪`,`כל הכבוד על הניסיון, ${KID()}! 🌟`,`יופי שניסית, ${KID()}! ${G('תקשיב','תקשיבי')} איך קוראים את המשפט 😊`];
+const SORRY = () => `כנראה יש תקלה אצלנו באפליקציה. אנחנו מתנצלים, ${KID()}! אנחנו בטוחים ש${G('קראת','קראת')} כמו שצריך 💙`;
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const UA = navigator.userAgent || '';
+const IN_APP = /FBAN|FBAV|Instagram|WhatsApp|Line\/|GSA\/|; wv\)|Telegram/i.test(UA);
+const LOCAL = !/^https?:$/.test(location.protocol);
+const IOS = /iPhone|iPad|iPod/i.test(UA) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+const BLOCKED = IN_APP || LOCAL || !window.isSecureContext || !SR;
+let micReady = false, shuffle = true;
+// Reading-aloud speed, chosen with the 🐢/🐇 buttons and remembered on this phone
+const SPEEDS = [{r:.45, label:'🐢 לאט מאוד'}, {r:.6, label:'🐢 לאט'}, {r:.75, label:'רגיל'}, {r:.9, label:'🐇 מהר'}, {r:1.05, label:'🐇 מהר מאוד'}];
+let speed = 2;
+try{ const v = parseInt(localStorage.getItem('readSpeed'),10); if (v>=0 && v<SPEEDS.length) speed = v; }catch(_){}
+let mode = 'prac', order = [], idx = 0, results = [], cur = null;
+
+const app = document.getElementById('app');
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const shuffled = a => { const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]} return b; };
+function screen(html, cls=''){ app.innerHTML = `<section class="screen ${cls}">${html}</section>`; }
+
+/* ---------- matching what was heard against the sentence ----------
+   Kinder than plain speech-to-text:
+   • every alternative the phone offers, from every partial and final result, is pooled;
+   • each word is matched on its own, so order and extra words don't matter;
+   • spellings the phone often writes instead (chat for Chad, launch for lunch…), plurals,
+     same-sounding words and near spellings all count;
+   • small words (a, the, is) weigh half, since phones often drop them even when said. */
+const SOFT = new Set(['a','an','the','is']);
+const ALIAS = {
+  chad:['chat','shad','jad','chard','chads','chadd','tad','chaz','chet'],
+  kitchen:['kitchens','kitchin','kitten','chicken'],
+  lunch:['launch','lunches','lunge','lunj'],
+  sandwich:['sandwiches','sandwhich','sanwich','samwich'],
+  chips:['chip','ships','cheaps','chimps','tips'],
+  chair:['share','cher','chare','chairs','cheer'],
+  needs:['need','knees','kneads','neds','nids'],
+  new:['knew','nu','now'],
+  oh:['o','ohh','owe','oo'], no:['know','noh'],
+  he:['hi','hee'], she:['shee','see'], has:['his','haz','had','as'],
+  is:['his','its'], in:['inn','and'], on:['an','own'],
+  hen:['hand','hun','ham'], egg:['ag','eck','eggs'], pen:['pan','penn','pin'],
+  hat:['had','hot','hut'], bag:['back','beg','bug'], big:['bake','pig'],
+  desk:['disk','desks'], box:['books','bucks','fox'], dog:['dug','dock','doug'],
+  cat:['kat','cut','kit'], dan:['den','dawn','done'], tall:['tal','toll','towel'],
+  pupil:['people','pupils','puple'], teacher:['teachers','teach','teach her'],
+  rabbit:['rabbits','rabid','robert'], small:['smol','smell'], ball:['bowl','bol','bull'],
+  book:['books','buck'], car:['cars','core'], boy:['boi','buoy'], girl:['girls','gal','grill'],
+  happy:['happi','hippie'], friend:['friends','fred'], sister:['sisters'], brother:['brothers','bother'],
+  house:['horse','houses'], my:['mai','mi'], the:['da','de','duh'], a:['uh','ah']
+};
+function norm(s){ return (s||'').toLowerCase().replace(/[’']s\b/g,'').replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim(); }
+function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+const sim = (a,b) => (!a||!b) ? 0 : 1-lev(a,b)/Math.max(a.length,b.length);
+// consonant skeleton with voiced/unvoiced merged: bag≈back, hen≈hand
+function skel(w){
+  return w.replace(/ck|q/g,'k').replace(/ph/g,'f').replace(/ch|sh|j/g,'c').replace(/[bp]/g,'p').replace(/[dt]/g,'t').replace(/[gk]/g,'k')
+          .replace(/[vf]/g,'f').replace(/[zs]/g,'s').replace(/(.)\1+/g,'$1').replace(/[aeiouyw]/g,'').replace(/n(t|k)$/,'n');
+}
+// sentence → its words, with display text and the bare word used for matching
+function words(en){ return en.split(' ').map(t => ({t, k: norm(t).replace(/ /g,'')})); }
+function wordOk(target, tok){
+  if (!tok) return false;
+  if (tok===target || (ALIAS[target]||[]).includes(tok)) return true;
+  if (tok.replace(/s$/,'')===target.replace(/s$/,'')) return true;
+  if (target.length>=3 && skel(tok) && skel(tok)===skel(target)) return true;
+  return target.length>=4 && sim(target,tok) >= .75;
+}
+// Which words of the sentence appear anywhere in what the phone heard
+function matchWords(ws, heardTexts){
+  const pool = new Set();
+  for (const h of heardTexts){
+    const toks = norm(h).split(' ').filter(Boolean);
+    toks.forEach((t,i) => { pool.add(t); if (toks[i+1]) pool.add(t+toks[i+1]); });   // "sand which" → "sandwhich"
+    const full = norm(h); if (full) pool.add(full);
+  }
+  const toks = [...pool];
+  return ws.map(w => !w.k || toks.some(t => wordOk(w.k, t)));
+}
+function scoreOf(ws, hits){
+  let tot=0, got=0, strongMissing=false;
+  ws.forEach((w,i) => { const wt = SOFT.has(w.k) ? .5 : 1; tot += wt; if (hits[i]) got += wt; else if (wt===1) strongMissing = true; });
+  let sc = Math.round(100*got/tot);
+  if (!strongMissing) sc = Math.max(sc, 92);          // every main word was read → that's a reading
+  return sc;
+}
+
+/* ---------- reading aloud with the word lit up ---------- */
+let readToken = 0;
+function stopReading(){ readToken++; try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(_){} document.querySelectorAll('.w.now').forEach(e=>e.classList.remove('now')); }
+function enVoice(){ try{ return speechSynthesis.getVoices().find(v=>v.lang && /^en[-_]US/i.test(v.lang)) || speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('en')); }catch(_){ return null; } }
+function readSentence(onDone){
+  if (liveRec) return;
+  stopReading();
+  const tok = readToken, ws = cur.words, spans = () => document.querySelectorAll('#sent .w');
+  // character offset where each word starts, to follow the voice's word-boundary events
+  const starts = []; let pos = 0; ws.forEach(w => { starts.push(pos); pos += w.t.length + 1; });
+  let boundary = false, done = false, step = Math.round(400/SPEEDS[speed].r), i = 0, timer = null;
+  const light = n => spans().forEach((s,j) => s.classList.toggle('now', j===n));
+  const finish = () => { if (done) return; done = true; clearTimeout(timer); if (tok===readToken){ light(-1); setHear(true); onDone && onDone(); } };
+  const tick = () => { if (tok!==readToken || boundary || done) return; light(i); if (++i < ws.length) timer = setTimeout(tick, step); };
+  setHear(false);
+  if (!window.speechSynthesis){ tick(); setTimeout(finish, ws.length*step+300); return; }
+  try{
+    const u = new SpeechSynthesisUtterance(cur.item.en.replace(/!/g,'! '));
+    u.lang = 'en-US'; u.rate = SPEEDS[speed].r; const v = enVoice(); if (v) u.voice = v;
+    u.onstart = () => { if (!boundary) tick(); };
+    u.onboundary = e => { if (tok!==readToken || e.name && e.name!=='word') return; boundary = true; clearTimeout(timer);
+      let n = 0; starts.forEach((s,j) => { if (e.charIndex >= s) n = j; }); light(n); };
+    u.onend = finish; u.onerror = finish;
+    speechSynthesis.speak(u);
+    setTimeout(() => { if (!boundary && i===0) tick(); }, 500);       // voice never said it started
+    setTimeout(finish, (ws.length*900 + 2500)/Math.min(1, SPEEDS[speed].r/.75));                         // voice never said it ended
+  }catch(_){ finish(); }
+}
+function setHear(on){ const b = $('hear'); if (b) b.disabled = !on || !!liveRec || (mode==='exam' && !cur.tries && !cur.done); }
+
+/* ---------- microphone ---------- */
+function micHelp(reason){
+  const ask = `${KID()}, ${G('תבקש','תבקשי')} ממבוגר עזרה:`;
+  if (IN_APP) return `<p class="note"><b>${ask}</b> האפליקציה נפתחה בתוך וואטסאפ, ושם אין מיקרופון. לוחצים על ⋮ למעלה ובוחרים "פתח ב-Chrome"${IOS?' (או ב-Safari)':''}.</p>`;
+  if (LOCAL || !window.isSecureContext) return `<p class="note"><b>${ask}</b> האפליקציה נפתחה כקובץ, וכך הטלפון חוסם את המיקרופון. צריך לפתוח אותה מקישור שמתחיל ב-https://</p>`;
+  if (!SR) return `<p class="note"><b>${ask}</b> הדפדפן הזה לא מזהה דיבור. פותחים את הקישור ב-${IOS?'Safari':'Chrome'}.</p>`;
+  if (IOS) return `<p class="note"><b>${ask}</b><ol><li>הגדרות ← Safari ← מיקרופון ← "אפשר".</li><li>הגדרות ← כללי ← מקלדת ← להפעיל "הכתבה".</li><li>לרענן את הדף.</li></ol></p>`;
+  return `<p class="note"><b>${ask}</b><ol><li>סמל המנעול ליד הכתובת ← הרשאות ← מיקרופון ← "אפשר".</li><li>אם אין: הגדרות הטלפון ← אפליקציות ← Chrome ← הרשאות ← מיקרופון.</li><li>לרענן את הדף.</li></ol></p>`;
+}
+async function requestMic(){
+  if (BLOCKED) return {ok:false};
+  try{ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){ const st = await navigator.mediaDevices.getUserMedia({audio:true}); st.getTracks().forEach(t=>t.stop()); } return {ok:true}; }
+  catch(err){ return {ok:false, reason: err && err.name}; }
+}
+
+/* ---------- progress ---------- */
+function setProgress(){
+  $('count').textContent = order.length ? `משפט ${Math.min(idx+1,order.length)} מתוך ${order.length}` : '';
+  $('bar').style.width = order.length ? (idx/order.length*100)+'%' : '0';
+}
+
+/* ---------- details screen (for the adult) ---------- */
+function setupScreen(fresh){
+  order = []; setProgress(); $('ttl').textContent = 'לפני שמתחילים';
+  const p = Object.assign({name:'', gender:null, phone:''}, fresh ? {} : (PROFILE||{}));
+  screen(`<h2 style="font-size:1.35rem;text-align:center">👋 3 פרטים קצרים למבוגר</h2>
+    <div class="fld"><label class="lbl" for="kname">1. שם התלמיד/ה</label>
+      <input id="kname" type="text" autocomplete="off" maxlength="20" value="${esc(p.name)}" placeholder="לדוגמה: דני"></div>
+    <div class="fld"><span class="lbl">2. ילד או ילדה?</span>
+      <div class="chips"><button type="button" class="chipb" id="gm" aria-pressed="${p.gender==='m'}">ילד</button><button type="button" class="chipb" id="gf" aria-pressed="${p.gender==='f'}">ילדה</button></div></div>
+    <div class="fld"><label class="lbl" for="phone">3. טלפון של הורה לקבלת דוח <small>(לא חובה)</small></label>
+      <input id="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="14" value="${esc(p.phone)}" placeholder="050-1234567"></div>
+    <p class="hint">בסוף כל תרגול אפשר לשלוח להורה דוח בוואטסאפ.</p>
+    <p class="err" id="err"></p>
+    <button class="btn big" id="save" style="align-self:center">שמירה והמשך ←</button>`);
+  const press = (on, off) => { $(on).setAttribute('aria-pressed','true'); $(off).setAttribute('aria-pressed','false'); $('err').textContent=''; };
+  $('gm').onclick = () => { p.gender='m'; press('gm','gf'); };
+  $('gf').onclick = () => { p.gender='f'; press('gf','gm'); };
+  ['kname','phone'].forEach(id => $(id).onkeydown = e => { if (e.key==='Enter') e.target.blur(); });
+  $('save').onclick = () => {
+    p.name = $('kname').value.trim().slice(0,20); p.phone = $('phone').value.trim();
+    const miss = [!p.name && 'שם', !p.gender && 'ילד/ילדה'].filter(Boolean);
+    if (miss.length){ $('err').textContent = 'חסר: ' + miss.join(', '); return; }
+    if (p.phone && !intlPhone(p.phone)){ $('err').textContent = 'מספר הטלפון לא נראה תקין. אפשר גם להשאיר ריק.'; return; }
+    saveProfile(p); startScreen();
+  };
+}
+
+/* ---------- start screen ---------- */
+function startScreen(){
+  if (!PROFILE || !PROFILE.name || !PROFILE.gender){ setupScreen(); return; }
+  stopReading(); stopListening(true);
+  order = []; setProgress(); $('ttl').textContent = `הקריאה של ${KID()}`;
+  screen(`<h2 style="font-size:1.4rem">👋 היי ${esc(KID())}! ${G('בוא','בואי')} נקרא באנגלית</h2>
+    <div id="micbox" class="result">${BLOCKED ? micHelp() : `<p class="note info">קודם מאשרים מיקרופון: לוחצים על הכפתור, ובחלון שקופץ בוחרים "אפשר".</p>
+      <button class="btn big" id="allow">🎤 אישור מיקרופון</button>`}</div>
+    <div class="modes">
+      <button class="mode prac" id="goPrac" ${micReady?'':'disabled'}>📖 תרגול כללי<small>${BOOK.length+EXTRA.length} משפטים, עם הקראה</small></button>
+      <button class="mode exam" id="goExam" ${micReady?'':'disabled'}>📝 תרגול לבחינה<small>${STORY} · ${BOOK.length} משפטים</small></button>
+    </div>
+    <label class="tog"><input type="checkbox" id="shuf" ${shuffle?'checked':''}> בתרגול הכללי: לערבב את הסדר</label>
+    <button class="btn ghost sm" id="edit">👤 לא ${esc(KID())}? לשינוי פרטים</button>`, 'center');
+  $('shuf').onchange = e => shuffle = e.target.checked;
+  $('edit').onclick = () => setupScreen(true);
+  const unlock = () => { $('goPrac').disabled = false; $('goExam').disabled = false; };
+  if ($('allow')) $('allow').onclick = async () => {
+    $('allow').disabled = true; $('allow').textContent = 'מחכים לאישור…';
+    const r = await requestMic();
+    if (r.ok){ micReady = true; $('micbox').innerHTML = `<p class="ok-mic">✅ המיקרופון מוכן, ${esc(KID())}!</p>`; unlock(); }
+    else { $('micbox').innerHTML = micHelp(r.reason) + `<div class="row"><button class="btn ghost sm" id="again">לנסות שוב</button><button class="btn ghost sm" id="noMic">להמשיך בלי מיקרופון</button></div>`;
+           $('again').onclick = startScreen; $('noMic').onclick = unlock; }
+  };
+  if (BLOCKED){ $('micbox').innerHTML += `<button class="btn ghost sm" id="noMic">להמשיך בלי מיקרופון</button>`; $('noMic').onclick = unlock; }
+  $('goPrac').onclick = () => begin('prac');
+  $('goExam').onclick = () => begin('exam');
+}
+
+function begin(m, list){
+  mode = m;
+  order = list || (m==='exam' ? BOOK.slice() : (shuffle ? shuffled([...BOOK, ...EXTRA]) : [...BOOK, ...EXTRA]));
+  idx = 0; results = []; showSentence();
+}
+
+/* ---------- one sentence ---------- */
+const MIC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>`;
+let liveRec = null, ringTimer = null, stopTimer = null, settleTimer = null;
+
+function showSentence(){
+  stopReading(); stopListening(true);
+  setProgress();
+  const item = order[idx];
+  cur = {item, words: words(item.en), tries:0, misses:0, best:0, passed:false, glitch:false, done:false, hits:null, showHe:false};
+  const secs = Math.min(14, Math.max(8, Math.round(5 + cur.words.length*0.9)));
+  cur.secs = secs;
+  screen(`<div class="sbox ${mode}">${mode==='exam' ? `<p class="story">📝 ${STORY}</p>` : ''}<p class="pic" aria-hidden="true">${item.pic||''}</p><p class="sent" id="sent" lang="en">${cur.words.map(w=>`<span class="w">${esc(w.t)}</span>`).join(' ')}</p></div>
+    <div class="tools">
+      <button class="tool" id="hear">🔊 ${mode==='exam'?'להקשיב':'להקשיב שוב'}</button>
+      ${mode==='prac' ? `<button class="tool" id="tr">💡 מה זה אומר?</button>` : ''}
+    </div>
+    <div class="speed" aria-label="קצב ההקראה">
+      <button id="slower" aria-label="לאט יותר">🐢</button><span id="spd"></span><button id="faster" aria-label="מהר יותר">🐇</button>
+    </div>
+    <p class="he" id="he" hidden></p>
+    <div class="mid" id="mid">
+      <p class="prompt" id="pr"></p>
+      <div class="ring" id="ring" style="--secs:${secs}s">
+        <svg class="track" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg>
+        <div class="core">${MIC}<span class="sec" id="sec"></span></div>
+      </div>
+      <div id="dots">${dots()}</div>
+      <div class="result" id="res"></div>
+    </div>
+    <div class="foot" id="foot"><button class="btn ghost sm" id="home">→ לתפריט</button><span></span></div>`);
+  $('home').onclick = startScreen;
+  $('hear').onclick = () => readSentence(() => setTimeout(() => { if (!liveRec && cur) againAttempt(); }, 350));
+  const showSpeed = () => { $('spd').textContent = 'קצב: ' + SPEEDS[speed].label.replace(/[🐢🐇] /u,''); $('slower').disabled = speed===0; $('faster').disabled = speed===SPEEDS.length-1; };
+  const setSpeed = d => {
+    speed = Math.max(0, Math.min(SPEEDS.length-1, speed+d)); showSpeed();
+    try{ localStorage.setItem('readSpeed', speed); }catch(_){}
+    if (!liveRec && !$('hear').disabled) readSentence();          // play it right away at the new speed
+  };
+  $('slower').onclick = () => setSpeed(-1); $('faster').onclick = () => setSpeed(1); showSpeed();
+  if ($('tr')) $('tr').onclick = () => { cur.showHe = !cur.showHe; $('he').textContent = cur.item.he; $('he').hidden = !cur.showHe; };
+  if (mode==='prac'){
+    // practice: hear it first, then it's Ofri's turn
+    $('pr').textContent = `${G('תקשיב','תקשיבי')}, ואחר כך ${G('תקרא','תקראי')} בקול 👂`;
+    readSentence(() => { if (!cur.tries && !liveRec) setTimeout(startAttempt, 350); });
+  } else {
+    // test practice: Ofri reads first; listening opens after his first try
+    setHear(false);
+    $('pr').textContent = `${KID()}, ${G('תקרא','תקראי')} את המשפט בקול`;
+    setTimeout(startAttempt, 700);
+  }
+}
+
+function dots(){
+  let h=''; for(let i=0;i<MAX_TRIES;i++) h += `<span class="dot ${i<cur.tries?(cur.passed&&i===cur.tries-1?'win':'used'):''}"></span>`;
+  return `<div class="tries">ניסיונות: ${h}</div>`;
+}
+function paint(hits, final){
+  document.querySelectorAll('#sent .w').forEach((s,i) => {
+    s.classList.remove('live','hit','miss','now');
+    if (final){ if (hits[i]) s.classList.add('hit'); else if (!SOFT.has(cur.words[i].k)) s.classList.add('miss'); } else if (hits[i]) s.classList.add('live');
+  });
+}
+function clearPaint(){ document.querySelectorAll('#sent .w').forEach(s => s.classList.remove('live','hit','miss')); }
+function setRes(html, listening){ if ($('mid')) $('mid').classList.toggle('compact', !!html && !listening); if ($('res')) $('res').innerHTML = html; if ($('pr')) $('pr').hidden = !!html && !listening; }
+
+function ringOn(){
+  const r = $('ring'); if (!r) return;
+  r.classList.remove('live','off'); void r.offsetWidth; r.classList.add('live');
+  let left = cur.secs; $('sec').textContent = left;
+  clearInterval(ringTimer);
+  ringTimer = setInterval(()=>{ left--; if ($('sec')) $('sec').textContent = left>0 ? left : ''; if (left<=0) clearInterval(ringTimer); }, 1000);
+}
+function ringOff(){
+  clearInterval(ringTimer); clearTimeout(stopTimer); clearTimeout(settleTimer);
+  const r = $('ring'); if (r){ r.classList.remove('live'); if (cur && cur.done) r.classList.add('off'); }
+  if ($('sec')) $('sec').textContent = '';
+}
+function stopListening(abort){
+  ringOff();
+  if (liveRec){ const r = liveRec; liveRec = null; try{ abort ? r.abort() : r.stop(); }catch(_){} }
+}
+
+/* Listening: continuous, with partial results, several alternatives per result.
+   Words light up green while Ofri reads; it stops by itself once every main word was heard. */
+function startAttempt(){
+  if (!cur || cur.done || liveRec || !$('ring')) return;
+  stopReading(); clearPaint();
+  let rec;
+  try { if (BLOCKED || !micReady) throw 0; rec = new SR(); } catch(_) { miss(); return; }
+  rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 5;
+  const heard = []; let any = false, failed = false, ended = false;
+  liveRec = rec; setHear(false);
+  setRes(`<p class="msg good">מקשיבים… ${G('תקרא','תקראי')} עכשיו 📖</p>`, true);
+  ringOn();
+  stopTimer = setTimeout(() => { if (liveRec===rec){ try{ rec.stop(); }catch(_){} } }, cur.secs*1000);
+  rec.onresult = ev => {
+    for (let i=0;i<ev.results.length;i++) for (let j=0;j<ev.results[i].length;j++){ const t = ev.results[i][j].transcript; if (t && t.trim()){ heard.push(t); any = true; } }
+    const hits = matchWords(cur.words, heard);
+    paint(hits, false);
+    const mainDone = cur.words.every((w,i) => hits[i] || SOFT.has(w.k));
+    clearTimeout(settleTimer);
+    if (mainDone) settleTimer = setTimeout(() => { if (liveRec===rec){ try{ rec.stop(); }catch(_){} } }, 800);
+  };
+  rec.onerror = ev => { if (ev.error==='aborted') return; failed = !any; };
+  rec.onend = () => {
+    if (ended) return; ended = true;
+    const mine = liveRec===rec; if (mine) liveRec = null;
+    ringOff();
+    if (!mine && !any) return;                       // cancelled by leaving the screen
+    if (!any) { miss(); return; }
+    judge(heard);
+  };
+  try { rec.start(); } catch(_) { liveRec = null; ringOff(); miss(); }
+}
+
+function judge(heard){
+  const hits = matchWords(cur.words, heard), score = scoreOf(cur.words, hits);
+  cur.tries++; cur.best = Math.max(cur.best, score); cur.hits = hits;
+  paint(hits, true);
+  $('dots').innerHTML = dots();
+  const col = score>=PASS ? 'var(--leaf)' : score>=50 ? 'var(--sun)' : 'var(--berry)';
+  const view = `<div class="line"><span class="pct" style="color:${col}">${score}%</span><div class="meter"><i style="width:${score}%;background:${col}"></i></div></div>`;
+  const missed = cur.words.filter((w,i)=>!hits[i] && !SOFT.has(w.k)).map(w=>w.t.replace(/[.!?,]/g,''));
+  if (score >= PASS){
+    cur.passed = true;
+    setRes(view + `<p class="msg good">${pick(CHEER_WIN())}</p>`);
+    finish();
+  } else if (cur.tries < MAX_TRIES){
+    const tip = missed.length ? `<br>${G('שים','שימי')} לב: <b dir="ltr" lang="en">${esc(missed.slice(0,2).join(', '))}</b>` : '';
+    const head = score>=50 ? `כמעט, ${KID()}! ✨` : `${G('בוא','בואי')} ננסה שוב, ${KID()}, לאט וברור 🙂`;
+    setRes(view + `<p class="msg warm">${head}${tip}</p>${readyRow()}`);
+    setHear(true);
+  } else {
+    if (!cur.modelRead){
+      cur.modelRead = true;
+      setRes(view + `<p class="msg warm">${pick(CHEER_FAIL())}</p>`);
+      finish();
+      setTimeout(() => readSentence(), 400);     // reads it once; then the child can try again or go on
+    } else {
+      setRes(view + `<p class="msg warm">${G('תקשיב','תקשיבי')} 🔊 ו${G('נסה','נסי')} שוב, ${KID()} 🙂</p>`);
+      finish();
+    }
+  }
+}
+function readyRow(){
+  setTimeout(() => { if ($('ready')) $('ready').onclick = () => { setRes(''); startAttempt(); }; }, 0);
+  return `<div class="row"><button class="btn sm" id="ready">${G('מוכן','מוכנה')} לניסיון נוסף? 🎤</button></div>`;
+}
+// The phone heard nothing. Twice in a row means the problem is ours, not Ofri's.
+function miss(){
+  if (cur.done) return;
+  cur.misses++;
+  if (cur.misses >= MAX_MISSES){
+    cur.glitch = true;
+    setRes(`<p class="msg sorry">${SORRY()}</p>`);
+    finish();
+  } else {
+    setRes(`<p class="msg warm">לא הצלחתי לשמוע, ${KID()} 🙉 ${G('דבר','דברי')} קרוב לטלפון</p>${readyRow()}`);
+    setHear(true);
+  }
+}
+function finish(){
+  cur.done = true; ringOff();
+  $('dots').innerHTML = dots(); setHear(true);
+  // the child can always read the sentence again before moving on
+  if ($('res') && !$('again2')){
+    $('res').insertAdjacentHTML('beforeend', `<div class="row"><button class="btn sm" id="again2">🎤 ${G('לקרוא','לקרוא')} שוב</button></div>`);
+    $('again2').onclick = againAttempt;
+  }
+  const last = idx === order.length-1;
+  $('foot').innerHTML = `<button class="btn ghost sm" id="home">→ לתפריט</button><button class="btn big" id="next">${last?'לסיכום 🏁':'למשפט הבא ←'}</button>`;
+  $('home').onclick = startScreen; $('next').onclick = next;
+}
+// Another go at the same sentence, also after it was passed or after a microphone hiccup
+function againAttempt(){
+  if (!cur || liveRec) return;
+  cur.done = false; cur.misses = 0;
+  const r = $('ring'); if (r) r.classList.remove('off');
+  setRes('');
+  startAttempt();
+}
+function next(){
+  clearTimeout(cur.auto); stopReading(); stopListening(true);
+  results.push({en:cur.item.en, score: cur.glitch && !cur.tries ? null : cur.best, passed:cur.passed, glitch:cur.glitch});
+  idx++;
+  idx < order.length ? showSentence() : summary();
+}
+
+/* ---------- summary + report to a parent ---------- */
+function summary(){
+  $('bar').style.width='100%'; $('count').textContent = 'סיום!';
+  const scored = results.filter(r=>r.score!==null);
+  const avg = scored.length ? Math.round(scored.reduce((a,r)=>a+r.score,0)/scored.length) : null;
+  const ok = results.filter(r=>r.passed).length;
+  const again = results.filter(r=>r.score!==null && !r.passed);
+  const glitches = results.filter(r=>r.glitch && r.score===null).length;
+  const report = buildReport(avg, ok, again, glitches);
+  const num = PROFILE && intlPhone(PROFILE.phone);
+  const wa = `https://wa.me/${num||''}?text=${encodeURIComponent(report)}`;
+  screen(`<div class="faces">🏆</div>
+    <h2 style="font-size:1.45rem">כל הכבוד ${esc(KID())}, ${G('סיימת','סיימת')}!</h2>
+    <div class="stats">
+      <div class="stat"><b>${avg===null?'—':avg+'%'}</b><span>ציון ממוצע</span></div>
+      <div class="stat"><b>${ok}/${results.length}</b><span>נקראו נכון</span></div>
+      <div class="stat"><b>${mode==='exam'?'📝':'📖'}</b><span>${mode==='exam'?'תרגול לבחינה':'תרגול כללי'}</span></div>
+    </div>
+    ${again.length ? `<p class="prompt">כדאי לתרגל שוב:</p><div class="list">${again.map(r=>`<div lang="en">${esc(r.en)}</div>`).join('')}</div>` : `<p class="msg good">${glitches ? "כל המשפטים שנבדקו נקראו נכון! 🌟" : "כל המשפטים נקראו נכון! 🌟"}</p>`}
+    <a class="btn wa" id="wa" href="${wa}" target="_blank" rel="noopener">📲 ${num ? 'שליחת דוח להורה בוואטסאפ' : 'שיתוף הדוח בוואטסאפ'}</a>
+    <div class="row">
+      ${again.length ? '<button class="btn sm" id="redo">לתרגל רק את אלה</button>' : ''}
+      <button class="btn ghost sm" id="home">לתפריט</button>
+    </div>`, 'center');
+  if (again.length) $('redo').onclick = () => begin(mode, mode==='exam' ? BOOK.filter(b=>again.some(r=>r.en===b.en)) : shuffled([...BOOK,...EXTRA].filter(b=>again.some(r=>r.en===b.en))));
+  $('home').onclick = startScreen;
+}
+function buildReport(avg, ok, again, glitches){
+  const d = new Date(), date = `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`;
+  const lines = [
+    `📖 דוח קריאה באנגלית – ${KID()}`,
+    `📅 ${date}`,
+    mode==='exam' ? `📝 תרגול לבחינה (${STORY})` : '📖 תרגול כללי',
+    avg===null ? '' : `⭐ ציון ממוצע: ${avg}%`,
+    `✅ ${G('קרא','קראה')} נכון ${ok} מתוך ${results.length} משפטים`,
+    ''
+  ];
+  results.forEach(r => lines.push(`${r.passed ? '✅' : r.score===null ? '⚪' : '🔸'} ${r.en}${r.score===null ? ' (תקלה במיקרופון)' : ` – ${r.score}%`}`));
+  if (again.length) lines.push('', 'כדאי לתרגל שוב את המשפטים המסומנים ב-🔸.');
+  if (glitches) lines.push(`(${glitches} משפטים לא נבדקו בגלל תקלה במיקרופון)`);
+  lines.push('', 'genulogic ©');
+  return lines.filter((l,i,a)=>!(l==='' && a[i-1]==='')).join('\n');
+}
+
+try{ window.speechSynthesis && speechSynthesis.getVoices(); }catch(_){}
+startScreen();
+</script>
+
+</body>
+</html>
