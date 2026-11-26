@@ -293,7 +293,8 @@ let readToken = 0;
 function stopReading(){ readToken++; try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(_){} document.querySelectorAll('.w.now').forEach(e=>e.classList.remove('now')); }
 function enVoice(){ try{ return speechSynthesis.getVoices().find(v=>v.lang && /^en[-_]US/i.test(v.lang)) || speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('en')); }catch(_){ return null; } }
 function readSentence(onDone){
-  if (liveRec) return;
+  if (cur) clearTimeout(cur.startT);
+  if (liveRec){ stopListening(true); setRes(''); }
   stopReading();
   const tok = readToken, ws = cur.words, spans = () => document.querySelectorAll('#sent .w');
   // character offset where each word starts, to follow the voice's word-boundary events
@@ -316,7 +317,7 @@ function readSentence(onDone){
     setTimeout(finish, (ws.length*900 + 2500)/Math.min(1, SPEEDS[speed].r/.75));                         // voice never said it ended
   }catch(_){ finish(); }
 }
-function setHear(on){ const b = $('hear'); if (b) b.disabled = !on || !!liveRec || (mode==='exam' && !cur.tries && !cur.done); }
+function setHear(on){ const b = $('hear'); if (b) b.disabled = !on; }
 
 /* ---------- microphone ---------- */
 function micHelp(reason){
@@ -446,10 +447,9 @@ function showSentence(){
     $('pr').textContent = `${G('תקשיב','תקשיבי')}, ואחר כך ${G('תקרא','תקראי')} בקול 👂`;
     readSentence(() => { if (!cur.tries && !liveRec) setTimeout(startAttempt, 350); });
   } else {
-    // test practice: Ofri reads first; listening opens after his first try
-    setHear(false);
-    $('pr').textContent = `${KID()}, ${G('תקרא','תקראי')} את המשפט בקול`;
-    setTimeout(startAttempt, 700);
+    // test practice: the phone starts listening by itself; 🔊 is there if he wants to hear it first
+    $('pr').innerHTML = `${KID()}, ${G('תקרא','תקראי')} את המשפט בקול<br><small>(אפשר גם להקשיב קודם 🔊)</small>`;
+    cur.startT = setTimeout(startAttempt, 900);
   }
 }
 
@@ -492,7 +492,7 @@ function startAttempt(){
   try { if (BLOCKED || !micReady) throw 0; rec = new SR(); } catch(_) { miss(); return; }
   rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 5;
   const heard = []; let any = false, failed = false, ended = false;
-  liveRec = rec; setHear(false);
+  liveRec = rec;
   setRes(`<p class="msg good">מקשיבים… ${G('תקרא','תקראי')} עכשיו 📖</p>`, true);
   ringOn();
   stopTimer = setTimeout(() => { if (liveRec===rec){ try{ rec.stop(); }catch(_){} } }, cur.secs*1000);
@@ -509,7 +509,7 @@ function startAttempt(){
     if (ended) return; ended = true;
     const mine = liveRec===rec; if (mine) liveRec = null;
     ringOff();
-    if (!mine && !any) return;                       // cancelled by leaving the screen
+    if (!mine) return;                               // cancelled: left the screen or chose to listen first
     if (!any) { miss(); return; }
     judge(heard);
   };
