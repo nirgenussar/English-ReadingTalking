@@ -80,10 +80,19 @@ main{flex:1;min-height:0;display:flex}
 @keyframes drain{from{stroke-dashoffset:0}to{stroke-dashoffset:289}}
 .ring .core{width:72%;height:72%;border-radius:50%;background:var(--berry-soft);color:var(--berry);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring.live .core{background:var(--berry);color:#fff}
-.ring.off{opacity:.35}
+.ring{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ring:not(.live) .core{box-shadow:0 4px 0 color-mix(in srgb,var(--berry) 45%,transparent)}
+.ring:active .core{transform:translateY(2px)}
+.ring .tap{font-family:var(--display);font-size:.8rem;line-height:1;margin-top:2px}
 .ring .core svg{width:40%;height:40%}
 .ring .sec{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1;font-variant-numeric:tabular-nums}
-.mid.compact .ring{display:none}
+/* after a try: small record button beside the result, so everything stays on one screen */
+.mid.compact{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;justify-content:stretch}
+.mid.compact #pr,.mid.compact #dots{display:none}
+.mid.compact .result{min-width:0}
+.mid.compact .line{max-width:none}
+.mid.compact .ring{grid-row:1;width:clamp(60px,9.5vh,78px);height:clamp(60px,9.5vh,78px)}
+.mid.compact .ring .tap{display:none}
 .mid{overflow-y:auto;justify-content:safe center}
 .tries{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.88rem}
 .dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--muted)}
@@ -137,7 +146,7 @@ main{flex:1;min-height:0;display:flex}
 .list{display:flex;flex-direction:column;gap:4px;width:100%;max-height:22vh;overflow-y:auto}
 .list div{direction:ltr;font-family:var(--display);background:var(--scene);border-radius:10px;padding:4px 10px;text-align:left;font-size:.95rem}
 .faces{font-size:clamp(34px,6vh,52px);line-height:1}
-@media (max-height:640px){.screen{gap:6px;padding:10px 12px}.speed button{width:32px;height:32px;font-size:1rem}.tool{padding:4px 12px}.msg{padding:6px 12px;font-size:1rem}.speed span{font-size:.88rem}.sbox{padding:8px 10px 10px;min-height:96px}.sbox.exam{padding-top:22px}.pic{font-size:1.7rem}.sent{font-size:clamp(1.7rem,8.6vw,2.4rem)}.btn.big{font-size:1.1rem;padding:11px 24px}}
+@media (max-height:640px){#pr small{display:none}.ring{width:84px;height:84px}.screen{gap:6px;padding:10px 12px}.speed button{width:32px;height:32px;font-size:1rem}.tool{padding:4px 12px}.msg{padding:6px 12px;font-size:1rem}.speed span{font-size:.88rem}.sbox{padding:8px 10px 10px;min-height:96px}.sbox.exam{padding-top:22px}.pic{font-size:1.7rem}.sent{font-size:clamp(1.7rem,8.6vw,2.4rem)}.btn.big{font-size:1.1rem;padding:11px 24px}}
 @media (prefers-reduced-motion:reduce){.screen{animation:none}.bar i,.w{transition:none}.ring.live .fg{animation:none}}
 </style>
 
@@ -407,6 +416,7 @@ const MIC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 let liveRec = null, ringTimer = null, stopTimer = null, settleTimer = null;
 
 function showSentence(){
+  if (cur) clearTimeout(cur.readT);
   stopReading(); stopListening(true);
   setProgress();
   const item = order[idx];
@@ -424,16 +434,21 @@ function showSentence(){
     <p class="he" id="he" hidden></p>
     <div class="mid" id="mid">
       <p class="prompt" id="pr"></p>
-      <div class="ring" id="ring" style="--secs:${secs}s">
+      <button class="ring" id="ring" style="--secs:${secs}s" aria-label="להתחיל להקליט">
         <svg class="track" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg>
-        <div class="core">${MIC}<span class="sec" id="sec"></span></div>
-      </div>
+        <span class="core">${MIC}<span class="sec" id="sec"><span class="tap">${G('לחץ','לחצי')}</span></span></span>
+      </button>
       <div id="dots">${dots()}</div>
       <div class="result" id="res"></div>
     </div>
     <div class="foot" id="foot"><button class="btn ghost sm" id="home">→ לתפריט</button><span></span></div>`);
   $('home').onclick = startScreen;
-  $('hear').onclick = () => readSentence(() => setTimeout(() => { if (!liveRec && cur) againAttempt(); }, 350));
+  $('hear').onclick = () => readSentence();
+  // tap the microphone to start; tap again while it listens to say "I finished"
+  $('ring').onclick = () => {
+    if (liveRec){ try{ liveRec.stop(); }catch(_){} return; }
+    if (cur.done) againAttempt(); else { setRes(''); startAttempt(); }
+  };
   const showSpeed = () => { $('spd').textContent = 'קצב: ' + SPEEDS[speed].label.replace(/[🐢🐇] /u,''); $('slower').disabled = speed===0; $('faster').disabled = speed===SPEEDS.length-1; };
   const setSpeed = d => {
     speed = Math.max(0, Math.min(SPEEDS.length-1, speed+d)); showSpeed();
@@ -444,12 +459,11 @@ function showSentence(){
   if ($('tr')) $('tr').onclick = () => { cur.showHe = !cur.showHe; $('he').textContent = cur.item.he; $('he').hidden = !cur.showHe; };
   if (mode==='prac'){
     // practice: hear it first, then it's Ofri's turn
-    $('pr').textContent = `${G('תקשיב','תקשיבי')}, ואחר כך ${G('תקרא','תקראי')} בקול 👂`;
-    readSentence(() => { if (!cur.tries && !liveRec) setTimeout(startAttempt, 350); });
+    $('pr').textContent = `${G('תקשיב','תקשיבי')}, ואז ${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} 🎤`;
+    readSentence();
   } else {
     // test practice: the phone starts listening by itself; 🔊 is there if he wants to hear it first
-    $('pr').innerHTML = `${KID()}, ${G('תקרא','תקראי')} את המשפט בקול<br><small>(אפשר גם להקשיב קודם 🔊)</small>`;
-    cur.startT = setTimeout(startAttempt, 900);
+    $('pr').innerHTML = `${G('לחץ','לחצי')} על המיקרופון ו${G('תקרא','תקראי')} בקול 🎤<br><small>(אפשר גם להקשיב קודם 🔊)</small>`;
   }
 }
 
@@ -468,15 +482,15 @@ function setRes(html, listening){ if ($('mid')) $('mid').classList.toggle('compa
 
 function ringOn(){
   const r = $('ring'); if (!r) return;
-  r.classList.remove('live','off'); void r.offsetWidth; r.classList.add('live');
+  r.classList.remove('live','off'); void r.offsetWidth; r.classList.add('live'); r.setAttribute('aria-label','לסיים את ההקלטה');
   let left = cur.secs; $('sec').textContent = left;
   clearInterval(ringTimer);
   ringTimer = setInterval(()=>{ left--; if ($('sec')) $('sec').textContent = left>0 ? left : ''; if (left<=0) clearInterval(ringTimer); }, 1000);
 }
 function ringOff(){
   clearInterval(ringTimer); clearTimeout(stopTimer); clearTimeout(settleTimer);
-  const r = $('ring'); if (r){ r.classList.remove('live'); if (cur && cur.done) r.classList.add('off'); }
-  if ($('sec')) $('sec').textContent = '';
+  const r = $('ring'); if (r){ r.classList.remove('live'); r.setAttribute('aria-label','להתחיל להקליט'); }
+  if ($('sec')) $('sec').innerHTML = `<span class="tap">${G('לחץ','לחצי')}</span>`;
 }
 function stopListening(abort){
   ringOff();
@@ -538,7 +552,7 @@ function judge(heard){
       cur.modelRead = true;
       setRes(view + `<p class="msg warm">${pick(CHEER_FAIL())}</p>`);
       finish();
-      setTimeout(() => readSentence(), 400);     // reads it once; then the child can try again or go on
+      cur.readT = setTimeout(() => readSentence(), 400);     // reads it once; then the child can try again or go on
     } else {
       setRes(view + `<p class="msg warm">${G('תקשיב','תקשיבי')} 🔊 ו${G('נסה','נסי')} שוב, ${KID()} 🙂</p>`);
       finish();
@@ -546,8 +560,7 @@ function judge(heard){
   }
 }
 function readyRow(){
-  setTimeout(() => { if ($('ready')) $('ready').onclick = () => { setRes(''); startAttempt(); }; }, 0);
-  return `<div class="row"><button class="btn sm" id="ready">${G('מוכן','מוכנה')} לניסיון נוסף? 🎤</button></div>`;
+  return `<p class="hint">${G('מוכן','מוכנה')} לניסיון נוסף? ${G('לחץ','לחצי')} על המיקרופון 🎤</p>`;
 }
 // The phone heard nothing. Twice in a row means the problem is ours, not Ofri's.
 function miss(){
@@ -566,10 +579,7 @@ function finish(){
   cur.done = true; ringOff();
   $('dots').innerHTML = dots(); setHear(true);
   // the child can always read the sentence again before moving on
-  if ($('res') && !$('again2')){
-    $('res').insertAdjacentHTML('beforeend', `<div class="row"><button class="btn sm" id="again2">🎤 ${G('לקרוא','לקרוא')} שוב</button></div>`);
-    $('again2').onclick = againAttempt;
-  }
+  if ($('res') && !$('again2')) $('res').insertAdjacentHTML('beforeend', `<p class="hint" id="again2">רוצה לקרוא שוב? ${G('לחץ','לחצי')} על המיקרופון 🎤</p>`);
   const last = idx === order.length-1;
   $('foot').innerHTML = `<button class="btn ghost sm" id="home">→ לתפריט</button><button class="btn big" id="next">${last?'לסיכום 🏁':'למשפט הבא ←'}</button>`;
   $('home').onclick = startScreen; $('next').onclick = next;
